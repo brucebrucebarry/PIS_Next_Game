@@ -38,8 +38,28 @@ def collect_season_links():
     return pages
 
 #ANDTHEN: open season, verify proper files, create Season instance
-#TODO: iterate through list of pages using requests to open the season
-#TODO: search if <em>="No files found.", if non season has games scheduled
+
+def request_seasons():
+    # TODO: iterate through list of pages using requests to open the season
+
+    """
+    Uses a list of seasons to iterate through each season using requests
+    :return:
+    """
+    all_seasons= collect_season_links()
+    x=0
+    for season in all_seasons:
+        landing_page = requests.get(season)
+        soup = BeautifulSoup(landing_page.content, 'html.parser')
+        # TODO: search if <em>="No files found.", if non season has games scheduled
+        if not soup.findAll("a", text="FIRST GAMES") and not soup.findAll("em"):
+            print(x)
+            #FIXME: Add the download tool to allow txt file to be downloaded by
+            print(soup)
+        x += 1
+
+request_seasons()
+
 #TODO: create a new Season instance using the year+season name
 #ANDTHEN: iterate through each dividion
 #Future: look in the Seasons directory, if season pass in
@@ -48,5 +68,3 @@ def collect_season_links():
 #TODO: create a League class to handle adding each league
 #TODO: create a Division class to handle adding each Division
 #TODO: create a Team class to handle managing each team
-seasons= collect_season_links()
-print(seasons)
