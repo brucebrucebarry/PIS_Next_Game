@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import os
 
 """
 ON OPEN:
@@ -8,7 +9,6 @@ ON OPEN:
 - create if not there
     - skip to GATHER FROM WEB
 - pick latest year
-
 
 
 
@@ -23,8 +23,21 @@ GATHER FROM WEB
 
 """
 
-base_page= 'https://pdxindoorsoccer.com'
 
+#Future: startup process that cretes checks for a dev.ini file. If non it creates it and all the needed folders.
+    #future: load from config file using Python config parser
+
+
+
+def open_ini ():
+    from configparser import ConfigParser
+    parser = ConfigParser()
+    parser.read('dev.ini')
+    return parser.get('links', 'base_page')
+
+base_page= open_ini ()
+print(base_page)
+#base_page= 'https://pdxindoorsoccer.com'
 
 def collect_season_links():
     """
@@ -53,16 +66,17 @@ def request_seasons():
         soup = BeautifulSoup(landing_page.content, 'html.parser')
         # TODO: search if <em>="No files found.", if non season has games scheduled
         if not soup.findAll("a", text="FIRST GAMES") and not soup.findAll("em"):
-            print(x)
-            #FIXME: Add the download tool to allow txt file to be downloaded by
-            print(soup)
-        x += 1
 
-request_seasons()
+
+            #FIXME: Add the download tool to allow txt file to be downloaded by
+            x += 1
+
+print(os.listdir())
+#request_seasons()
 
 #TODO: create a new Season instance using the year+season name
 #ANDTHEN: iterate through each dividion
-#Future: look in the Seasons directory, if season pass in
+#future: look in the Seasons directory, if season pass in
 
 
 #TODO: create a League class to handle adding each league
