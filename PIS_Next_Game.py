@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import os
 
 """
 ON OPEN:
@@ -23,31 +22,15 @@ GATHER FROM WEB
 
 """
 
-
-#Future: startup process that cretes checks for a dev.ini file. If non it creates it and all the needed folders.
-    #future: load from config file using Python config parser
-
-
-
-def open_ini ():
-    from configparser import ConfigParser
-    parser = ConfigParser()
-    parser.read('dev.ini')
-    return parser.get('links', 'base_page')
-
-base_page= open_ini ()
-print(base_page)
-#base_page= 'https://pdxindoorsoccer.com'
-
 def collect_season_links():
     """
     Uses BeautifulSoup and requests to find all the links to the seasons on the PIS website.
     :return: list of links for the seasons
     """
-    landing_page = requests.get(base_page + '/teams/schedules/')
+    landing_page = requests.get(pdx_website + schdules_ext)
     soup = BeautifulSoup(landing_page.content, 'html.parser')
     season = soup.find("div", class_="entry-content")
-    pages = [base_page + link['href'] for link in season.findAll('a', href=True) if link.text]
+    pages = [pdx_website + link['href'] for link in season.findAll('a', href=True) if link.text]
     return pages
 
 #ANDTHEN: open season, verify proper files, create Season instance
@@ -56,22 +39,22 @@ def request_seasons():
     # TODO: iterate through list of pages using requests to open the season
 
     """
-    Uses a list of seasons to iterate through each season using requests
-    :return:
+    Uses a list of seasons from collect_season_links() to iterate through each season using requests
+    :return: None
     """
     all_seasons= collect_season_links()
     x=0
     for season in all_seasons:
         landing_page = requests.get(season)
         soup = BeautifulSoup(landing_page.content, 'html.parser')
-        # TODO: search if <em>="No files found.", if non season has games scheduled
         if not soup.findAll("a", text="FIRST GAMES") and not soup.findAll("em"):
+            #TODO: download a season to find the season name and year
+            # open/create a folder with the season namedate
+            # open/create a season object
 
-
-            #FIXME: Add the download tool to allow txt file to be downloaded by
             x += 1
 
-print(os.listdir())
+
 #request_seasons()
 
 #TODO: create a new Season instance using the year+season name
@@ -82,3 +65,29 @@ print(os.listdir())
 #TODO: create a League class to handle adding each league
 #TODO: create a Division class to handle adding each Division
 #TODO: create a Team class to handle managing each team
+
+def open_ini ():
+    """
+    START UP IN main()
+    Opens the dev.ini file from startup/dev.ini. Once opened ConfigParser is used to parse the sections
+    :return: base_page
+    """
+    from configparser import ConfigParser
+    parser = ConfigParser()
+    parser.read('startup/dev.ini')
+    return parser.get('links', 'pdx_page'), parser.get('links', 'schedules_location')
+
+
+
+def main():
+    if __name__ == '__main__':
+        import startup_file
+        return open_ini()
+        request_seasons()
+
+    else:
+        print("This main() function is being imported instead of ran directly. This will cause an issue")
+        return "no information because this module was loaded by another program"
+
+pdx_website, schdules_ext= main()
+print(pdx_website)

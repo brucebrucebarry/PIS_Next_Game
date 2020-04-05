@@ -7,24 +7,60 @@ If the files are not present they are created
 #imports
 from configparser import ConfigParser
 import os
+from pathlib import Path
 
 # Current DIR
-#TODO update from ini file to xml
-cd= os.getcwd()
-ini = cd +"\dev.ini"
+cd = os.getcwd()
+startup_dir = cd + "\startup"
+ini = startup_dir +"\dev.ini"
+cd_files = os.listdir()
 
-print(cd,ini)
 
 config = ConfigParser()
 
 config['links'] = {
-    'base_page' : 'https://pdxindoorsoccer.com',
+    'pdx_page' : 'https://pdxindoorsoccer.com',
+    'schedules_location' : '/teams/schedules/',
 }
 
+
+def first_run():
+    """
+    checks if the startup directory is created, if not it is created with all the needed files
+
+    :return: None
+    """
+    if "startup" not in cd_files:
+        make_folder('startup')
+        make_folder('seasons')
+        push_file()
+
+
+
+def make_folder(name):
+    """
+    Creates a new folder if non already exist
+
+    :param name: name/path of the new folder
+    :return: None
+    """
+    p = Path(name)
+    p.mkdir(exist_ok=True)
+
+
+
 def push_file():
-    with open( './dev.ini', 'w') as f:
+    """
+    updates/creates the dev.ini file with the changes made to config variable
+    :return: None
+    """
+    with open('startup\dev.ini', 'w') as f:
         config.write(f)
-        print(f"\nChanges have been pushed to {cd}")
+        print(f"\nChanges have been pushed to {ini}")
 
 
-push_file()
+
+#Future: create a retutrn to default settings def that overrides the file with initial settings
+
+
+first_run()
