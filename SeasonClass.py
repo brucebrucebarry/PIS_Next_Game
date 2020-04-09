@@ -18,8 +18,10 @@ class Season:
         self.start_date = None # captured post initialization
         self.end_date = None # captured post initialization
         self.rereg_deadline = None # captured post initialization
-        self.all_games = []
+        self.all_games = [] # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
         os.chdir(season_dir) # changes the directory while open, changed back when closed
+
+
 
     # functions that assign init variables
     def get_season_name(self, season_name):
@@ -31,6 +33,13 @@ class Season:
         if not self.name and not self.year:
             self.name = season_name
             self.year = season_name[-4:]
+
+
+
+    def set_rereg_deadline(self, deadline):
+        """"""
+
+        self.rereg_deadline
 
 
 
@@ -55,7 +64,9 @@ class Season:
         regex_division = re.search("[A-Z]{3,5}\sDIVISION\s\d[A-Z]?",raw_schedule_text) # finds the league and division
         regex_games = re.findall("([A-Z]{3})\s([A-Z]{3})\s*(\d*)\s*(\d*:\d\d)\s*(AM|PM)\s*(.*)",raw_schedule_text) # a list of games in this division
         self.organize_raw_games(regex_games, regex_division.group()) #cleans and adds the proper information to self.all_games
-        # print(f"The {regex_division.group()} has {len(regex_games)} games scheduled this season\n\n\n{regex_games}")
+        regex_rereg_geadline = re.search("([A-Z]{3})\s([A-Z]{3})\s*(\d*)\s*DEADLINE TO RE-REGISTER FOR THE NEXT SEASON!",raw_schedule_text)
+        #self.set_rereg_deadline(regex_rereg_geadline.groups())
+        print(regex_rereg_geadline.group())
 
 
 

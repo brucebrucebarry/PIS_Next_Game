@@ -112,8 +112,8 @@ def main():
     working_seasons = request_seasons()
     season = SeasonClass.Season(working_seasons[0])
     season.gather_schedules()
-    print(len(season.all_games[10][0]),season.all_games[10][0])
-
+    #print(len(season.all_games[10][0]),season.all_games[10][0])
+    #print(season.rereg_deadline)
 
 
 # main function running here
