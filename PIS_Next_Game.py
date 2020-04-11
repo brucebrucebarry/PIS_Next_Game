@@ -113,7 +113,7 @@ def main():
     season = SeasonClass.Season(working_seasons[0])
     season.gather_schedules()
     #print(len(season.all_games[10][0]),season.all_games[10][0])
-    #print(season.rereg_deadline)
+    print(f" there are {len(season.all_games[0])} games in this division", season.all_games[0])
 
 
 # main function running here
