@@ -4,23 +4,39 @@ This file houses the Seasons class.
 import os
 from PIS_Next_Game import bs_obj_return
 import re
+import datetime
 
 cd = os.getcwd()
 season_dir = cd + "\seasons"
+
+MONTHS = {
+    "JAN": 1,
+    "FEB": 2,
+    "MAR": 3,
+    "APR": 4,
+    "MAY": 5,
+    "JUN": 6,
+    "JUL": 7,
+    "AUG": 8,
+    "SEP": 9,
+    "OCT": 10,
+    "NOV": 11,
+    "DEC": 12,
+}
 
 
 class Season:
 
     def __init__(self, season_link):
         self.season_link = season_link
-        self.name = None # captured post initialization get_season_name()
-        self.year = None # captured post initialization get_season_name()
-        self.start_date = None # captured post initialization
-        self.end_date = None # captured post initialization
-        self.rereg_deadline = None # captured post initialization set_rereg_deadline()
-        self.all_games = [] # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
+        self.name = None                # captured post initialization get_season_name()
+        self.year = None                # captured post initialization get_season_name()
+        self.start_date = None          # captured post initialization
+        self.end_date = None            # captured post initialization
+        self.rereg_deadline = None      # captured post initialization set_rereg_deadline()
+        self.all_games = []             # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
+        self.ordered_games = []
         os.chdir(season_dir) # TODO: changes the directory while open, *NTD(changed back when closed)*
-
 
 
 
@@ -43,7 +59,7 @@ class Season:
         """
         if not self.name and not self.year:
             self.name = season_name
-            self.year = season_name[-4:]
+            self.year = int(season_name[-4:])
 
 
 
@@ -100,27 +116,69 @@ class Season:
         """
         used in regex_obj_schedule() to clean the raw schedule and append it to self.all_games
 
-        :param raw_games: list of strings gathered from BS scrape.
-        [0]day_of_week
+        :param raw_games: list of strings gathered from BS scrape. Below is the list created
+        [0]year
         [1]month
         [2]day
-        [3]time
-        [4]am_pm
-        [5]teams
+        [3]hour
+        [4]minute
+        [5]day of week
+        [6]home team
+        [7]away team
+        [8]league division
+        day_of_week
         :return: None
         """
         cleaned_games = [] # adds the name of the league and division
         for game in raw_games:
             to_add=[]
-            day_of_week = game[0]# DOW
-            month = game[1]# month
-            day = game[2]# day
-            time = game[3]# time
-            am_pm = game[4]# AM/PM
-            home_team, away_team = self.harvest_teams(game[5])# teams
+            day_of_week = game[0]       # DOW
+            month = game[1]             # month
+            day = game[2]               # day
+            time = game[3]              # time
+            am_pm = game[4]             # AM/PM
+            home_team, away_team = self.harvest_teams(game[5])      # teams
+
+
             to_add.extend([day_of_week, month, day, time, am_pm, home_team, away_team, tagline])
             cleaned_games.append(to_add)
         self.all_games.append(cleaned_games)
+
+
+
+    def create_ordered_games(self, month_str, day_str, time, am_pm):
+        """
+        Will create a datetime object
+
+        :param month_str:
+        :param day_str:
+        :param time:
+        :param am_pm:
+        :return:
+        """
+        month = MONTHS[month_str]
+        day = int(day_str)
+        hour, minute = self.military_time(time, am_pm)
+        # datetime(year, month, day, hour=0, minute=0)
+        dt_tuple = datetime.datetime(self.year, month, day, hour, minute)
+
+
+
+    def military_time(self, raw_time, am_pm):
+        """
+        converts 12 Hr string time format to 24 Hr int format
+
+        :param raw_time: str
+        :param am_pm:
+        :return:
+        """
+        split_time = raw_time.split(":")
+        hour = int(split_time[0])
+        minute = int(split_time[1])
+        am_pm = am_pm.lower()
+        if am_pm == "pm":
+            hour += 12
+        return hour, minute
 
 
 
@@ -142,14 +200,20 @@ class Season:
 
         datetime_games = []
         for division in self.all_games:
-            map(self)
+            map(self.datetime_eachgame(),)
             # use map() to filter each game
 
 
 
     def  datetime_eachgame(self, game):
-        pass
+        """
+        Convert each game into a datetime object and returning that obje
 
+        datetime(year, month, day, hour=0, minute=0)
+        :param game:
+        :return:
+        """
+        pass
 
 
     def new_file_dump(self,file_name, to_dump):
@@ -178,13 +242,24 @@ class Season:
 class Division:
 
     def __init__(self, name, league, year):
-        self.name = name
+        self.division_name = name
         self.league = league
-        self.year = year
-        self.start_date = None  # captured post initialization
-        self.end_date = None  # captured post initialization
-        self.rereg_deadline = None  # captured post initialization
-        self.teams = []
+        self.year = year                    # start day year
+        self.start_date = None              # captured post initialization
+        self.end_date = None                # captured post initialization
+        self.rereg_deadline = None          # captured post initialization
+        self.teams = []                     # teams in league
         # extra
-        self.goal_limit = False
-        self.sportmanship_league = False
+        self.goal_limit = False             # for coed leagues
+        self.sportmanship_league = False    # for coed and womens
+
+
+
+    def __len__(self):
+        print(f"This division ({self.division_name}) division has:{len(self.teams)} teams")
+        return len(self.teams)
+
+
+
+    def __repr__(self):
+        return (f"This is the self.__class__.__name__: {self.__class__.__name__}")

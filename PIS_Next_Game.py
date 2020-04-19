@@ -114,7 +114,9 @@ def main():
     season.gather_schedules()
     #print(len(season.all_games[10][0]),season.all_games[10][0])
     print(f" there are {len(season.all_games[0])} games in this division", season.all_games[0])
-
+    z = season.all_games[10]
+    c = list(z)
+    print(c)
 
 # main function running here
 if __name__ == '__main__':
