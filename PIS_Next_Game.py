@@ -111,12 +111,12 @@ def main():
     """
     working_seasons = request_seasons()
     season = SeasonClass.Season(working_seasons[0])
-    season.gather_schedules()
+    season.main()
     #print(len(season.all_games[10][0]),season.all_games[10][0])
     print(f" there are {len(season.all_games[0])} games in this division", season.all_games[0])
     z = season.all_games[10]
-    c = list(z)
-    print(c)
+    print(len(season.compiled_games),season.compiled_games)
+
 
 # main function running here
 if __name__ == '__main__':

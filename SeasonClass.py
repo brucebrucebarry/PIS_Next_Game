@@ -5,6 +5,7 @@ import os
 from PIS_Next_Game import bs_obj_return
 import re
 import datetime
+import itertools
 
 cd = os.getcwd()
 season_dir = cd + "\seasons"
@@ -35,19 +36,31 @@ class Season:
         self.end_date = None            # captured post initialization
         self.rereg_deadline = None      # captured post initialization set_rereg_deadline()
         self.all_games = []             # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
-        self.ordered_games = []
+        self.compiled_games = []
         os.chdir(season_dir) # TODO: changes the directory while open, *NTD(changed back when closed)*
 
 
 
     def __len__(self):
-        print(f"This season has:{len(self.all_games)} divisions")
+        print(f"This season has:{len(self.all_games)} divisions. Returning number of games in this season")
         return len(self.all_games)
 
 
 
     def __repr__(self):
         return (f"This is the self.__class__.__name__: {self.__class__.__name__}")
+
+
+
+    def main(self):
+        """
+        runs the season after the season object is created to make sure everything is populated in the correct order
+
+        :return: None
+        """
+        self.gather_schedules()             # gathers all the external data from PDXindoorsoccer.com
+        self.sort_by_first_dt_element()     # sorts the games by date and removes duplicated games
+        #TODO self.gather_date_info()       # gathers the dates for start and end of the season
 
 
     # functions that assign init variables
@@ -73,6 +86,7 @@ class Season:
             clean_deadline = list(raw_deadline)
             clean_deadline.append(self.year)
             self.rereg_deadline = clean_deadline
+        # TODO make this a date object
 
 
     # main functions to gather and format schedules
@@ -116,51 +130,76 @@ class Season:
         """
         used in regex_obj_schedule() to clean the raw schedule and append it to self.all_games
 
-        :param raw_games: list of strings gathered from BS scrape. Below is the list created
+        :param raw_games: list of strings gathered from BS scrape of web page.
+
+        Below is the list created
         [0]year
         [1]month
         [2]day
-        [3]hour
-        [4]minute
+        [3]time
+        [4]am/pm
         [5]day of week
         [6]home team
         [7]away team
         [8]league division
-        day_of_week
+
         :return: None
         """
         cleaned_games = [] # adds the name of the league and division
         for game in raw_games:
-            to_add=[]
             day_of_week = game[0]       # DOW
             month = game[1]             # month
             day = game[2]               # day
-            time = game[3]              # time
-            am_pm = game[4]             # AM/PM
-            home_team, away_team = self.harvest_teams(game[5])      # teams
+            hour, minutes = self.military_time(game[3], game[4])        # time , AM/PM
+            home_team, away_team = self.harvest_teams_names(game[5])    # teams
+            dt_obj = self.create_datetime_object(month, day, hour, minutes)
+            to_add = [dt_obj, day_of_week, home_team, away_team, tagline]
 
 
-            to_add.extend([day_of_week, month, day, time, am_pm, home_team, away_team, tagline])
+            #to_add.extend([dt_obj, day_of_week, home_team, away_team, tagline])
             cleaned_games.append(to_add)
+            self.compiled_games.append(to_add)
+
+
         self.all_games.append(cleaned_games)
 
 
-
-    def create_ordered_games(self, month_str, day_str, time, am_pm):
+    def sort_by_first_dt_element(self):
         """
-        Will create a datetime object
+        sorts the self.compiled_games list by its datetime element
+        :return: None
+        """
+        almost_ready = sorted(self.compiled_games, key=lambda x: x[0])
+        self.compiled_games = list(almost_ready for almost_ready,_ in itertools.groupby(almost_ready))
+
+
+    def harvest_teams_names(self, game_line):
+        """
+        separates the home and away team using "vs" as a deliminator and strip() to remove whitespace
+
+        :param game_line: a string with '  vs  ' seperating the 2 home vs the away
+        :return: home team and away team as str
+        """
+        both_teams = game_line.split("  vs ")
+        return both_teams[0].strip(), both_teams[1].strip() # returns home team, away team
+
+
+    def create_datetime_object(self, month_str, day_str, hour, minutes):
+        """
+        Will create a datetime object out of
 
         :param month_str:
         :param day_str:
-        :param time:
-        :param am_pm:
-        :return:
+        :param hour:
+        :param minutes:
+
+        :return: datetime object
         """
         month = MONTHS[month_str]
         day = int(day_str)
-        hour, minute = self.military_time(time, am_pm)
         # datetime(year, month, day, hour=0, minute=0)
-        dt_tuple = datetime.datetime(self.year, month, day, hour, minute)
+        datetime_obj = datetime.datetime(self.year, month, day, hour, minutes)
+        return datetime_obj
 
 
 
@@ -181,16 +220,6 @@ class Season:
         return hour, minute
 
 
-
-    def harvest_teams(self, game_line):
-        """
-        separates the home and away team using "vs" as a deliminator and strip() to remove whitespace
-
-        :param game_line: a string with '  vs  ' seperating the 2 home vs the away
-        :return: home team and away team as str
-        """
-        both_teams = game_line.split("  vs ")
-        return both_teams[0].strip(), both_teams[1].strip() # returns home team, away team
 
 
     # Use datetime to create datetime objects from each game
@@ -239,24 +268,21 @@ class Season:
 
 
 
-class Division:
+class MatchDay:
 
-    def __init__(self, name, league, year):
-        self.division_name = name
-        self.league = league
-        self.year = year                    # start day year
-        self.start_date = None              # captured post initialization
-        self.end_date = None                # captured post initialization
-        self.rereg_deadline = None          # captured post initialization
-        self.teams = []                     # teams in league
-        # extra
-        self.goal_limit = False             # for coed leagues
-        self.sportmanship_league = False    # for coed and womens
+    def __init__(self):
+        self.match_day = None
+        self.datetime_day = None
+        self.games = []
+
+
+
+    def __str__(self):
+        return self.match_day
 
 
 
     def __len__(self):
-        print(f"This division ({self.division_name}) division has:{len(self.teams)} teams")
         return len(self.teams)
 
 
