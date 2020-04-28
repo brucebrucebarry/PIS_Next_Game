@@ -57,8 +57,6 @@ def collect_season_links():
 
 
 
-
-
 #ANDTHEN: open season, verify proper files, create Season instance
 
 def request_seasons():
@@ -112,10 +110,9 @@ def main():
     working_seasons = request_seasons()
     season = SeasonClass.Season(working_seasons[0])
     season.main()
-    #print(len(season.all_games[10][0]),season.all_games[10][0])
-    print(f" there are {len(season.all_games[0])} games in this division", season.all_games[0])
-    z = season.all_games[10]
-    print(len(season.compiled_games),season.compiled_games)
+    print(len(season.compiled_games), season.compiled_games)
+    print(f"this is the start:{season.start_date}\nthis is the end:{season.end_date}\n{season.start_date-season.end_date}")
+
 
 
 # main function running here

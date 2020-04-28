@@ -32,11 +32,11 @@ class Season:
         self.season_link = season_link
         self.name = None                # captured post initialization get_season_name()
         self.year = None                # captured post initialization get_season_name()
-        self.start_date = None          # captured post initialization
-        self.end_date = None            # captured post initialization
+        self.start_date = None          # captured post initialization set_season_start_end()
+        self.end_date = None            # captured post initialization set_season_start_end()
         self.rereg_deadline = None      # captured post initialization set_rereg_deadline()
         self.all_games = []             # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
-        self.compiled_games = []
+        self.compiled_games = []        # organized by datetime
         os.chdir(season_dir) # TODO: changes the directory while open, *NTD(changed back when closed)*
 
 
@@ -60,8 +60,40 @@ class Season:
         """
         self.gather_schedules()             # gathers all the external data from PDXindoorsoccer.com
         self.sort_by_first_dt_element()     # sorts the games by date and removes duplicated games
+        self.set_season_start_end()         # gathers the dates of the start and end of the season
         #TODO self.gather_date_info()       # gathers the dates for start and end of the season
 
+
+    # Date functions
+    def create_datetime_object(self, month_str, day_str, hour, minutes):
+        """
+        Will create a datetime object out of self.year, month, day, hour, minutes
+
+        :param month_str:
+        :param day_str:
+        :param hour:
+        :param minutes:
+
+        :return: datetime object
+        """
+        month = MONTHS[month_str]
+        day = int(day_str)
+        # datetime(year, month, day, hour=0, minute=0)
+        datetime_obj = datetime.datetime(self.year, month, day, hour, minutes)
+        return datetime_obj
+
+
+
+    def create_date_object(self, month_int, day_int):
+        """
+        Creates and returns a date object
+
+        :param month_int:
+        :param day_str:
+        :return: a date object
+        """
+
+        return datetime.date(self.year, month_int, day_int).strftime("%B %d, %Y")
 
     # functions that assign init variables
     def get_season_name(self, season_name):
@@ -80,15 +112,24 @@ class Season:
         """
         checks if self.rereg_deadline is not set, if True, Adds the year as the last parameter and append to self.rereg_deadline
         :param deadline:
-        :return:
+        :return: None
         """
         if not self.rereg_deadline:
-            clean_deadline = list(raw_deadline)
-            clean_deadline.append(self.year)
-            self.rereg_deadline = clean_deadline
-        # TODO make this a date object
+            month = MONTHS[raw_deadline[1]]
+            day = int(raw_deadline[2])
+            self.rereg_deadline = self.create_date_object(month, day)
 
 
+    def set_season_start_end(self):
+        """
+        finds start and end date of the season then updates them to the object
+
+        :return: None
+        """
+        if not self.start_date:
+            self.start_date = self.compiled_games[0][0]
+        if not self.end_date:
+            self.end_date = self.compiled_games[-1][0]
     # main functions to gather and format schedules
     def gather_schedules(self):
         """
@@ -184,24 +225,6 @@ class Season:
         return both_teams[0].strip(), both_teams[1].strip() # returns home team, away team
 
 
-    def create_datetime_object(self, month_str, day_str, hour, minutes):
-        """
-        Will create a datetime object out of
-
-        :param month_str:
-        :param day_str:
-        :param hour:
-        :param minutes:
-
-        :return: datetime object
-        """
-        month = MONTHS[month_str]
-        day = int(day_str)
-        # datetime(year, month, day, hour=0, minute=0)
-        datetime_obj = datetime.datetime(self.year, month, day, hour, minutes)
-        return datetime_obj
-
-
 
     def military_time(self, raw_time, am_pm):
         """
@@ -249,18 +272,6 @@ class Season:
         """"""
         with open(file_name, "a") as f:
             f.write(to_dump)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
