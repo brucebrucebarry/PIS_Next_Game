@@ -112,6 +112,7 @@ def main():
     season.main()
     print(len(season.compiled_games), season.compiled_games)
     print(f"this is the start:{season.start_date}\nthis is the end:{season.end_date}\n{season.start_date-season.end_date}")
+    print(f"There are {season.total_matches} total matches and there should be {len(season.compiled_games)}")
 
 
 

@@ -25,7 +25,6 @@ MONTHS = {
     "DEC": 12,
 }
 
-
 class Season:
 
     def __init__(self, season_link):
@@ -37,20 +36,15 @@ class Season:
         self.rereg_deadline = None      # captured post initialization set_rereg_deadline()
         self.all_games = []             # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
         self.compiled_games = []        # organized by datetime
+        self.total_matches = None       # captured post initialization
         os.chdir(season_dir) # TODO: changes the directory while open, *NTD(changed back when closed)*
-
-
 
     def __len__(self):
         print(f"This season has:{len(self.all_games)} divisions. Returning number of games in this season")
         return len(self.all_games)
 
-
-
     def __repr__(self):
         return (f"This is the self.__class__.__name__: {self.__class__.__name__}")
-
-
 
     def main(self):
         """
@@ -61,8 +55,8 @@ class Season:
         self.gather_schedules()             # gathers all the external data from PDXindoorsoccer.com
         self.sort_by_first_dt_element()     # sorts the games by date and removes duplicated games
         self.set_season_start_end()         # gathers the dates of the start and end of the season
+        self.add_match_number()             # gives each game a match number
         #TODO self.gather_date_info()       # gathers the dates for start and end of the season
-
 
     # Date functions
     def create_datetime_object(self, month_str, day_str, hour, minutes):
@@ -78,11 +72,8 @@ class Season:
         """
         month = MONTHS[month_str]
         day = int(day_str)
-        # datetime(year, month, day, hour=0, minute=0)
         datetime_obj = datetime.datetime(self.year, month, day, hour, minutes)
         return datetime_obj
-
-
 
     def create_date_object(self, month_int, day_int):
         """
@@ -106,8 +97,6 @@ class Season:
             self.name = season_name
             self.year = int(season_name[-4:])
 
-
-
     def set_rereg_deadline(self, raw_deadline):
         """
         checks if self.rereg_deadline is not set, if True, Adds the year as the last parameter and append to self.rereg_deadline
@@ -119,7 +108,6 @@ class Season:
             day = int(raw_deadline[2])
             self.rereg_deadline = self.create_date_object(month, day)
 
-
     def set_season_start_end(self):
         """
         finds start and end date of the season then updates them to the object
@@ -130,6 +118,24 @@ class Season:
             self.start_date = self.compiled_games[0][0]
         if not self.end_date:
             self.end_date = self.compiled_games[-1][0]
+
+    def add_match_number(self):
+        """
+        Ran in self.main()
+
+        this itertes through each game (self.compiled_games) and does 2 things:
+        1.  adds the match number to the last element of each game
+        2.  sets self.total_matches on the last iteration
+
+        :return: None
+        """
+        if not self.total_matches:
+            match_number = 0
+            for match in self.compiled_games:
+                self.compiled_games[match_number].append(match_number + 1)
+                match_number += 1
+            self.total_matches = match_number
+
     # main functions to gather and format schedules
     def gather_schedules(self):
         """
@@ -144,8 +150,6 @@ class Season:
             league = season_links.findAll("a")
             for division in league:
                 self.regex_obj_schedule(division.attrs['href'])
-
-
 
     def regex_obj_schedule(self, final_link):
         """
@@ -163,8 +167,6 @@ class Season:
         self.organize_raw_games(regex_games, regex_division.group()) #cleans and adds the proper information to self.all_games
         regex_rereg_geadline = re.search("([A-Z]{3})\s([A-Z]{3})\s*(\d*)\s*DEADLINE TO RE-REGISTER FOR THE NEXT SEASON!",raw_schedule_text)
         self.set_rereg_deadline(regex_rereg_geadline.groups())
-
-
 
     def organize_raw_games(self, raw_games, tagline):
         # TODO make it an easy datetime obj (year, month, day, hour, min, second)
@@ -196,14 +198,9 @@ class Season:
             dt_obj = self.create_datetime_object(month, day, hour, minutes)
             to_add = [dt_obj, day_of_week, home_team, away_team, tagline]
 
-
-            #to_add.extend([dt_obj, day_of_week, home_team, away_team, tagline])
             cleaned_games.append(to_add)
             self.compiled_games.append(to_add)
-
-
         self.all_games.append(cleaned_games)
-
 
     def sort_by_first_dt_element(self):
         """
@@ -212,7 +209,6 @@ class Season:
         """
         almost_ready = sorted(self.compiled_games, key=lambda x: x[0])
         self.compiled_games = list(almost_ready for almost_ready,_ in itertools.groupby(almost_ready))
-
 
     def harvest_teams_names(self, game_line):
         """
@@ -223,8 +219,6 @@ class Season:
         """
         both_teams = game_line.split("  vs ")
         return both_teams[0].strip(), both_teams[1].strip() # returns home team, away team
-
-
 
     def military_time(self, raw_time, am_pm):
         """
@@ -242,9 +236,6 @@ class Season:
             hour += 12
         return hour, minute
 
-
-
-
     # Use datetime to create datetime objects from each game
 
     def convert_allgames_to_datetime(self):
@@ -254,8 +245,6 @@ class Season:
         for division in self.all_games:
             map(self.datetime_eachgame(),)
             # use map() to filter each game
-
-
 
     def  datetime_eachgame(self, game):
         """
@@ -267,36 +256,30 @@ class Season:
         """
         pass
 
+    def new_file_dump(self, file_name, to_dump):
+        """
+        creates a new file and dumps all the info into it
 
-    def new_file_dump(self,file_name, to_dump):
-        """"""
+        :param file_name: path where
+        :param to_dump:
+        :return:
+        """
         with open(file_name, "a") as f:
             f.write(to_dump)
 
-
-
-
-
-
-
 class MatchDay:
 
-    def __init__(self):
+    def __init__(self, games):
         self.match_day = None
-        self.datetime_day = None
-        self.games = []
-
-
+        self.start_datetime = None
+        self.end_datetime = None
+        self.games = games
 
     def __str__(self):
         return self.match_day
 
-
-
     def __len__(self):
-        return len(self.teams)
-
-
+        return len(self.games)
 
     def __repr__(self):
-        return (f"This is the self.__class__.__name__: {self.__class__.__name__}")
+        return f"This is the self.__class__.__name__: {self.__class__.__name__}"
