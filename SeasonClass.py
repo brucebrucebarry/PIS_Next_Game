@@ -35,9 +35,10 @@ class Season:
         self.end_date = None            # captured post initialization set_season_start_end()
         self.rereg_deadline = None      # captured post initialization set_rereg_deadline()
         self.all_games = []             # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
-        self.compiled_games = []        # organized by datetime
-        self.total_matches = None       # captured post initialization
-        os.chdir(season_dir) # TODO: changes the directory while open, *NTD(changed back when closed)*
+        self.compiled_games = []        # organized by datetime organize_raw_games()
+        self.total_matches = None       # captured post initialization add_match_number()
+        self.match_days = {}            # captured post initialization
+        os.chdir(season_dir)            # TODO: changes the directory while open, *NTD(changed back when closed)*
 
     def __len__(self):
         print(f"This season has:{len(self.all_games)} divisions. Returning number of games in this season")
@@ -236,26 +237,6 @@ class Season:
             hour += 12
         return hour, minute
 
-    # Use datetime to create datetime objects from each game
-
-    def convert_allgames_to_datetime(self):
-        """"""
-
-        datetime_games = []
-        for division in self.all_games:
-            map(self.datetime_eachgame(),)
-            # use map() to filter each game
-
-    def  datetime_eachgame(self, game):
-        """
-        Convert each game into a datetime object and returning that obje
-
-        datetime(year, month, day, hour=0, minute=0)
-        :param game:
-        :return:
-        """
-        pass
-
     def new_file_dump(self, file_name, to_dump):
         """
         creates a new file and dumps all the info into it
@@ -267,13 +248,24 @@ class Season:
         with open(file_name, "a") as f:
             f.write(to_dump)
 
+    def create_match_days(self):
+        if not self.match_days:
+            # create start of day
+            # create end of day
+            # create a list of games within match days range
+            # append list of days games to dictionary match_day{}
+            pass
+
+
+# testing/work in progress
+
 class MatchDay:
 
     def __init__(self, games):
-        self.match_day = None
-        self.start_datetime = None
-        self.end_datetime = None
-        self.games = games
+        self.match_day = None           #
+        self.start_datetime = None      #
+        self.end_datetime = None        #
+        self.games = games              #
 
     def __str__(self):
         return self.match_day
