@@ -110,8 +110,9 @@ def main():
     working_seasons = request_seasons()
     season = SeasonClass.Season(working_seasons[0])
     season.main()
-    print(len(season.compiled_games), season.compiled_games)
-    print(f"this is the start:{season.start_date}\nthis is the end:{season.end_date}\n{season.start_date-season.end_date}")
+    # print(len(season.compiled_games), season.compiled_games)
+    print(f"this is the start:{season.start_date}\nthis is the end:{season.end_date}")
+    print(season.return_season_length())
     print(f"There are {season.total_matches} total matches and there should be {len(season.compiled_games)}")
 
 

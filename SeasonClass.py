@@ -256,6 +256,14 @@ class Season:
             # append list of days games to dictionary match_day{}
             pass
 
+    def return_season_length(self):
+        """
+        Calculates the number of days the season last by returning the difference from the first day to the last
+        :return: an integer the length of the season in days
+        """
+        season_length = self.end_date-self.start_date
+        return season_length.days
+
 
 # testing/work in progress
 
