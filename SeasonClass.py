@@ -5,6 +5,7 @@ import os
 from PIS_Next_Game import bs_obj_return
 import re
 import datetime
+from datetime import timedelta
 import itertools
 
 cd = os.getcwd()
@@ -37,7 +38,8 @@ class Season:
         self.all_games = []             # populated by organize_raw_games(), all games in an encapsulated list[division[games]]
         self.compiled_games = []        # organized by datetime organize_raw_games()
         self.total_matches = None       # captured post initialization add_match_number()
-        self.match_days = {}            # captured post initialization
+        self.total_match_days = None    # captured post initialization return_season_length()
+        self.match_days = []            # captured post initialization
         os.chdir(season_dir)            # TODO: changes the directory while open, *NTD(changed back when closed)*
 
     def __len__(self):
@@ -57,7 +59,7 @@ class Season:
         self.sort_by_first_dt_element()     # sorts the games by date and removes duplicated games
         self.set_season_start_end()         # gathers the dates of the start and end of the season
         self.add_match_number()             # gives each game a match number
-        #TODO self.gather_date_info()       # gathers the dates for start and end of the season
+        self.return_season_length()         # calculates the number of match days in the season
 
     # Date functions
     def create_datetime_object(self, month_str, day_str, hour, minutes):
@@ -241,45 +243,62 @@ class Season:
         """
         creates a new file and dumps all the info into it
 
-        :param file_name: path where
-        :param to_dump:
-        :return:
+        :param file_name: path where the files is that needs to be dumped
+        :param to_dump: the information that needs to be dumped
         """
         with open(file_name, "a") as f:
             f.write(to_dump)
 
-    def create_match_days(self):
-        if not self.match_days:
-            # create start of day
-            # create end of day
-            # create a list of games within match days range
-            # append list of days games to dictionary match_day{}
-            pass
 
     def return_season_length(self):
         """
-        Calculates the number of days the season last by returning the difference from the first day to the last
-        :return: an integer the length of the season in days
+        Calculates the number of days the season last by returning the difference from the first day to the last.
+        Updates self.total_match_days through
         """
-        season_length = self.end_date-self.start_date
-        return season_length.days
+        raw_match_days_count = self.end_date - self.start_date
+        self.total_match_days = raw_match_days_count.days
 
 
-# testing/work in progress
+    def match_day_set_start_time(self, match_day_datetime):
+        """
+        used in create_match_days. Takes in a datetime, adds a day, and sets the time to 10AM
+        :param match_day_datetime:
+        :return:
+        """
+        new_day_start_time = match_day_datetime + timedelta(days=1)
+        return new_day_start_time.replace(hour=10, minute=0)
 
-class MatchDay:
+    def create_match_days(self):
+        """
+        Loops through self.completed_games to check if any games fall within each match day,
+        then compilesthem into a list, appends that days games to self.match_days
+        :return:
+        """
+        copy_of_matches = self.compiled_games.copy()
+        end_of_day = self.match_day_set_start_time(self.start_date)
+        #TODO working on this but need to update software and reboot. Will continue once I am back in action
+        while copy_of_matches:
+            while copy_of_matches[0][0] < end_of_day:
+                pass
 
-    def __init__(self, games):
-        self.match_day = None           #
-        self.start_datetime = None      #
-        self.end_datetime = None        #
-        self.games = games              #
 
-    def __str__(self):
-        return self.match_day
+        """
+        #This is an almost working version of the loop to create each match day
+        
+        
+            matches_toadd = []
+            for match in copy_of_matches:
+                if match[0] < end_of_day:
+                    removed_match = copy_of_matches.pop(0)
+                    matches_toadd.append(removed_match)
+                else:
+                    self.match_days.append(matches_toadd)
+                    matches_toadd = []
+                    start_of_day = end_of_day
+                    end_of_day = self.match_day_set_start_time(start_of_day)
+        print(f"\n\nthis list should be empty {copy_of_matches}")
+        """
 
-    def __len__(self):
-        return len(self.games)
 
-    def __repr__(self):
-        return f"This is the self.__class__.__name__: {self.__class__.__name__}"
+
+        #TODO create the loop that runs through each match day
