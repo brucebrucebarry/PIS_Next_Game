@@ -281,7 +281,16 @@ class Season:
             while copy_of_matches[0][0] < end_of_day:
                 pass
 
+    # ACTIVEWORK gather team names and leagues from self.compiled_games and puts them into a dictionary with the team name as key and league as the value
+    def gather_team_names(self):
+        """
+        Gathers the names and league
+        :return:
+        """
+        pass
 
+
+        # FUTURE create the loop that runs through each match day
         """
         #This is an almost working version of the loop to create each match day
         
@@ -301,4 +310,4 @@ class Season:
 
 
 
-        #TODO create the loop that runs through each match day
+
